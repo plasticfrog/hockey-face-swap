@@ -6,6 +6,7 @@ from werkzeug.utils import secure_filename
 import insightface
 from insightface.app import FaceAnalysis
 import traceback
+import urllib.request
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
@@ -29,7 +30,17 @@ def init_models():
         face_app.prepare(ctx_id=-1, det_size=(320, 320))
         
         print("Loading face swapper model...")
-        face_swapper = insightface.model_zoo.get_model('inswapper_128.onnx', download=True, download_zip=True)
+        # Try to load existing model or download manually
+        model_path = os.path.join(os.path.expanduser('~'), '.insightface', 'models', 'inswapper_128.onnx')
+        
+        if not os.path.exists(model_path):
+            print("Downloading inswapper model manually...")
+            os.makedirs(os.path.dirname(model_path), exist_ok=True)
+            url = "https://huggingface.co/deepinsight/inswapper/resolve/main/inswapper_128.onnx"
+            urllib.request.urlretrieve(url, model_path)
+            print("Model downloaded successfully!")
+        
+        face_swapper = insightface.model_zoo.get_model(model_path)
         print("Models initialized successfully!")
     except Exception as e:
         print(f"Error initializing models: {e}")
@@ -97,6 +108,7 @@ def swap():
         
         if face_app is None or face_swapper is None:
             return jsonify({'error': 'AI models failed to load. Please try again in 1 minute.'}), 500
+        
         # Check if files are present
         if 'player_head' not in request.files or 'jersey_template' not in request.files:
             return jsonify({'error': 'Both images are required'}), 400
