@@ -25,8 +25,8 @@ def init_models():
     global face_app, face_swapper
     try:
         print("Initializing face analysis model...")
-        face_app = FaceAnalysis(name='buffalo_l')
-        face_app.prepare(ctx_id=0, det_size=(640, 640))
+        face_app = FaceAnalysis(name='buffalo_sc', allowed_modules=['detection', 'recognition'])
+        face_app.prepare(ctx_id=-1, det_size=(320, 320))
         
         print("Loading face swapper model...")
         face_swapper = insightface.model_zoo.get_model('inswapper_128.onnx', download=True, download_zip=True)
