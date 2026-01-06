@@ -91,6 +91,12 @@ def index():
 def swap():
     """Handle face swap request"""
     try:
+        # Initialize models if not already done
+        if face_app is None or face_swapper is None:
+            init_models()
+        
+        if face_app is None or face_swapper is None:
+            return jsonify({'error': 'AI models failed to load. Please try again in 1 minute.'}), 500
         # Check if files are present
         if 'player_head' not in request.files or 'jersey_template' not in request.files:
             return jsonify({'error': 'Both images are required'}), 400
