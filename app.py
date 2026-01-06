@@ -169,17 +169,3 @@ if __name__ == '__main__':
     print("Starting Hockey Face Swap application...")
     init_models()
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=False)
-```
-
-**And here's the complete requirements.txt:**
-```
-Flask==3.0.0
-insightface==0.7.3
-onnxruntime==1.20.0
-opencv-python-headless==4.10.0.84
-numpy>=1.26.0
-Werkzeug==3.0.1
-onnx==1.17.0
-gunicorn==21.2.0
-setuptools>=65.0.0
-requests==2.31.0
