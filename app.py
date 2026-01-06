@@ -6,7 +6,7 @@ from werkzeug.utils import secure_filename
 import insightface
 from insightface.app import FaceAnalysis
 import traceback
-import urllib.request
+import requests
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
@@ -30,14 +30,21 @@ def init_models():
         face_app.prepare(ctx_id=-1, det_size=(320, 320))
         
         print("Loading face swapper model...")
-        # Try to load existing model or download manually
+        # Download from alternative source
         model_path = os.path.join(os.path.expanduser('~'), '.insightface', 'models', 'inswapper_128.onnx')
         
         if not os.path.exists(model_path):
-            print("Downloading inswapper model manually...")
+            print("Downloading inswapper model from GitHub mirror...")
             os.makedirs(os.path.dirname(model_path), exist_ok=True)
-            url = "https://huggingface.co/deepinsight/inswapper/resolve/main/inswapper_128.onnx"
-            urllib.request.urlretrieve(url, model_path)
+            
+            # Use direct download link
+            url = "https://github.com/facefusion/facefusion-assets/releases/download/models/inswapper_128.onnx"
+            response = requests.get(url, stream=True)
+            
+            with open(model_path, 'wb') as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    f.write(chunk)
+            
             print("Model downloaded successfully!")
         
         face_swapper = insightface.model_zoo.get_model(model_path)
@@ -162,3 +169,17 @@ if __name__ == '__main__':
     print("Starting Hockey Face Swap application...")
     init_models()
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=False)
+```
+
+**And here's the complete requirements.txt:**
+```
+Flask==3.0.0
+insightface==0.7.3
+onnxruntime==1.20.0
+opencv-python-headless==4.10.0.84
+numpy>=1.26.0
+Werkzeug==3.0.1
+onnx==1.17.0
+gunicorn==21.2.0
+setuptools>=65.0.0
+requests==2.31.0
